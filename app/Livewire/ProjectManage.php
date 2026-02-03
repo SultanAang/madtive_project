@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Client; // Pastikan import Model Client
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
@@ -18,37 +19,40 @@ class ProjectManage extends Component {
 
     // --- FORM PROPERTIES ---
 
-    #[Validate('required|min:3')]
-    public $name = '';
+    #[Validate("required|min:3")]
+    public $name = "";
 
-    #[Validate('required|email')] 
-    public $client_email = ''; 
+    #[Validate("required|email")]
+    public $client_email = "";
 
-    #[Validate('nullable|string')]
-    public $description = '';
+    // [BARU] Tambahkan properti Company Name
+    #[Validate("required|string|min:3")]
+    public $company_name = "";
 
-    // Deadline & Status kita hapus validasinya dari sisi user input
-    // Karena akan di-set otomatis oleh sistem
-    public $status = 'pending'; 
+    #[Validate("nullable|string")]
+    public $description = "";
+
+    public $status = "pending";
     public $deadline = null;
 
-    #[Validate('nullable|image|max:2048')] 
-    public $logo; 
+    #[Validate("nullable|image|max:2048")]
+    public $logo;
 
     public $projectIdToEdit = null;
     public $oldLogo = null;
     public $myModal = false;
-    public $search = '';
+    public $search = "";
 
-    #[Layout("admin")] 
+    #[Layout("admin")]
     public function render() {
-        $projects = Project::with('client')
-            ->when($this->search, fn($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+        // Gunakan 'client.user' untuk mencegah error N+1 dan null property
+        $projects = Project::with("client.user")
+            ->when($this->search, fn($q) => $q->where("name", "like", "%" . $this->search . "%"))
             ->latest()
             ->paginate(10);
 
         return view("livewire.project-manage", [
-            "projects" => $projects
+            "projects" => $projects,
         ]);
     }
 
@@ -60,100 +64,124 @@ class ProjectManage extends Component {
     public function edit($id) {
         $project = Project::findOrFail($id);
         $this->projectIdToEdit = $id;
-        
+
         $this->name = $project->name;
-        $this->client_email = $project->client->email ?? ''; 
+        // Ambil email dari relasi (gunakan optional biar aman)
+        $this->client_email = $project->client?->user?->email ?? "";
+
+        // [BARU] Ambil nama company dari database saat edit
+        $this->company_name = $project->client?->company_name ?? "";
+
         $this->description = $project->description;
-        
-        // Load data lama, tapi tidak ditampilkan di form (disimpan di memori saja)
         $this->deadline = $project->deadline;
         $this->status = $project->status;
-        
-        $this->oldLogo = $project->logo; 
-        $this->logo = null; 
+        $this->oldLogo = $project->logo;
+        $this->logo = null;
 
         $this->myModal = true;
     }
 
     public function save() {
-        $this->validate(); 
+        $this->validate();
 
-        // 1. CEK / BUAT USER CLIENT
-        $user = User::where('email', $this->client_email)->first();
+        // 1. CEK / BUAT USER LOGIN
+        $user = User::where("email", $this->client_email)->first();
 
         if (!$user) {
             $generatedPassword = Str::random(8);
-            $generatedUsername = explode('@', $this->client_email)[0] . rand(100,999);
+            $generatedUsername = explode("@", $this->client_email)[0] . rand(100, 999);
 
             $user = User::create([
-                'name' => 'Client ' . $generatedUsername,
-                'email' => $this->client_email,
-                'username' => $generatedUsername,
-                'password' => Hash::make($generatedPassword),
-                'role' => 'client', 
+                "name" => "Client " . $generatedUsername,
+                "email" => $this->client_email,
+                "username" => $generatedUsername,
+                "password" => Hash::make($generatedPassword),
+                "role" => "client",
             ]);
 
-            session()->flash('new_account_info', "Akun Client Baru Dibuat! Password: $generatedPassword");
+            session()->flash(
+                "new_account_info",
+                "Akun Client Baru Dibuat! Password: $generatedPassword",
+            );
         }
 
-        // 2. SIAPKAN DATA UTAMA
+        // 2. CEK / BUAT / UPDATE DATA CLIENT
+        // Kita gunakan updateOrCreate agar:
+        // - Jika belum ada: Dibuat baru dengan nama company dari input.
+        // - Jika sudah ada: Nama company diupdate sesuai input (jika ingin merevisi).
+        $client = Client::updateOrCreate(
+            ["user_id" => $user->id], // Kunci pencarian
+            [
+                "company_name" => $this->company_name, // [BARU] Data yang disimpan/diupdate
+                // 'address' => $this->address,
+                // 'phone' => $this->phone,
+            ],
+        );
+
+        // 3. SIAPKAN DATA PROJECT
         $data = [
-            'name' => $this->name,
-            'client_id' => $user->id,
-            'description' => $this->description,
+            "name" => $this->name,
+            "client_id" => $client->id, // Hubungkan ke ID Client yang baru/ada
+            "description" => $this->description,
         ];
 
-        // 3. LOGIKA KHUSUS CREATE vs EDIT
         if (!$this->projectIdToEdit) {
-             // == KONDISI CREATE BARU ==
-             $data['slug'] = Str::slug($this->name);
-             
-             // Default Value (Sesuai Permintaan)
-             $data['status'] = 'pending'; 
-             $data['deadline'] = null; 
-             
-        } else {
-            // == KONDISI EDIT ==
-            // Kita JANGAN update status/deadline di sini.
-            // Biarkan status/deadline tetap seperti apa adanya di database
-            // (karena mungkin Tim Dokumentasi sudah mengubahnya)
+            $data["slug"] = Str::slug($this->name);
+            $data["status"] = "pending";
+            $data["deadline"] = null;
         }
 
-        // 4. HANDLE LOGO
         if ($this->logo) {
             if ($this->projectIdToEdit && $this->oldLogo) {
-                Storage::disk('public')->delete($this->oldLogo);
+                Storage::disk("public")->delete($this->oldLogo);
             }
-            $data['logo'] = $this->logo->store('project-logos', 'public');
+            $data["logo"] = $this->logo->store("project-logos", "public");
         }
 
-        // 5. EKSEKUSI
-        Project::updateOrCreate(['id' => $this->projectIdToEdit], $data);
+        Project::updateOrCreate(["id" => $this->projectIdToEdit], $data);
 
         $this->myModal = false;
         $this->resetInputFields();
-        
-        $msg = $this->projectIdToEdit ? "Project berhasil diupdate." : "Project berhasil dibuat.";
+
+        $msg = $this->projectIdToEdit
+            ? "Project & Data Client berhasil diupdate."
+            : "Project berhasil dibuat.";
         session()->flash("message", $msg);
     }
 
     public function delete($id) {
         $project = Project::findOrFail($id);
-        if ($project->logo) Storage::disk('public')->delete($project->logo);
+        $clientId = $project->client_id;
+
+        if ($project->logo) {
+            Storage::disk("public")->delete($project->logo);
+        }
         $project->delete();
+
+        // Cek apakah client masih punya project lain
+        $clientHasOtherProjects = Project::where("client_id", $clientId)->exists();
+
+        if (!$clientHasOtherProjects) {
+            $client = Clien::find($clientId);
+            if ($client) {
+                $userId = $client->user_id;
+                $client->delete();
+                User::where("id", $userId)->delete();
+            }
+        }
         session()->flash("message", "Project deleted.");
     }
 
     private function resetInputFields() {
         $this->projectIdToEdit = null;
-        $this->name = '';
-        $this->client_email = '';
-        $this->description = '';
+        $this->name = "";
+        $this->client_email = "";
+        $this->company_name = ""; // [BARU] Reset field ini juga
+        $this->description = "";
         $this->logo = null;
         $this->oldLogo = null;
-        // Reset status ke default memori (meski tidak dipakai di form)
-        $this->status = 'pending'; 
+        $this->status = "pending";
         $this->deadline = null;
-        $this->resetValidation(); 
+        $this->resetValidation();
     }
 }

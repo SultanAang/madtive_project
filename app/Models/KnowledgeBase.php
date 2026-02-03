@@ -4,18 +4,36 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class KnowledgeBase extends Model
-{
+class KnowledgeBase extends Model {
     use HasFactory;
-    
+
     // Tambahkan ini agar bisa simpan data!
 
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
-    protected $guarded = []; 
+    protected $guarded = [];
+
+    protected $fillable = [
+        // ... field lain ...
+        "title",
+        "category",
+        "content",
+        "slug",
+        "is_approve",
+        "rejection_note",
+    ];
+
+    // Helper Scopes agar gampang dipanggil
+    public function scopePublished(Builder $query) {
+        return $query->where("is_approve", "published");
+    }
+
+    public function scopePendingReview(Builder $query) {
+        return $query->where("is_approve", "review");
+    }
 }

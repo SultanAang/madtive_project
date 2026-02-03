@@ -24,8 +24,9 @@ class UserManage extends Component {
     // Opsi Role untuk Dropdown (Supaya rapi di view)
     public $roles = [
         ["id" => "admin", "name" => "Admin System"],
-        ["id" => "tim_dokumentasi", "name" => "Tim Dokumentasi"],
         ["id" => "reviewer_internal", "name" => "Reviewer Internal"],
+        ["id" => "tim_dokumentasi", "name" => "Tim Dokumentasi"],
+        ["id" => "client", "name" => "Client"],
     ];
     //  #[Validate("image|max:4000")]
     // $validated = $this->validate();
@@ -35,7 +36,7 @@ class UserManage extends Component {
     #[Layout("admin")]
     public function render() {
         return view("livewire.manage-user", [
-            "users" => User::where("role", "!=", "client")->latest()->paginate(10),
+            "users" => User::latest()->paginate(10),
         ]);
     }
 

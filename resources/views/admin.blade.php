@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Madtive Admin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" href="{{ asset('img/logo_madtive.jpg') }}" type="image/png">
 </head>
 <body class="font-sans antialiased bg-gray-50 min-h-screen">
 
@@ -17,7 +18,7 @@
         {{-- SIDEBAR --}}
         <aside class="w-64 bg-indigo-900 text-white flex flex-col shadow-xl flex-shrink-0">
             <div class="h-16 flex items-center justify-center border-b border-indigo-800 font-bold text-xl">
-                MADTIVE ADMIN
+                Madtive Admin
             </div>
 
             <nav class="flex-1 px-2 py-4 space-y-2 overflow-y-auto">

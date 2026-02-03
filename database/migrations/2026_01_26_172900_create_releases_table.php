@@ -44,6 +44,11 @@ return new class extends Migration
         // Agar Anda bisa bikin draft dulu sebelum dirilis ke publik
         $table->boolean('is_visible')->default(true);
 
+        $table->string('is_approve')->default('draft')->index();
+            
+            // Opsional: Catatan dari reviewer jika ditolak
+        $table->text('rejection_note')->nullable();
+
         $table->timestamps();
     });
 }

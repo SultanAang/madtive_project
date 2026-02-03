@@ -54,14 +54,14 @@ class ReleaseResource extends Resource {
                         ->placeholder("2.5.0")
                         ->required(),
 
-                    Select::make("group")
-                        ->label("Group Sidebar")
-                        ->options([
-                            "Version 2.x" => "Version 2.x",
-                            "Version 1.x" => "Version 1.x",
-                        ])
-                        ->required()
-                        ->default("Version 2.x"),
+                    // Select::make("group")
+                    //     ->label("Group Sidebar")
+                    //     ->options([
+                    //         "Version 2.x" => "Version 2.x",
+                    //         "Version 1.x" => "Version 1.x",
+                    //     ])
+                    //     ->required()
+                    //     ->default("Version 2.x"),
                 ]),
 
                 TextInput::make("title")
@@ -76,11 +76,12 @@ class ReleaseResource extends Resource {
                     ->label("Paragraf Pembuka")
                     ->toolbarButtons(["bold", "italic", "link", "bulletList", "redo", "undo"])
                     ->columnSpanFull(),
-
+            ]),
+            Section::make("Percobaan")->schema([
                 Repeater::make("features")
                     ->label("Daftar Fitur (Key Features)")
                     ->schema([
-                        Grid::make(2)->schema([
+                        Grid::make(1)->schema([
                             Select::make("icon")
                                 ->options([
                                     "o-bolt" => "Petir (Performance)",
@@ -103,7 +104,7 @@ class ReleaseResource extends Resource {
                     ])
                     ->collapsible()
                     ->grid(2)
-                    ->columnSpanFull(),
+                    ->columnSpanFull(), 
             ]),
 
             Section::make("Publishing")->schema([

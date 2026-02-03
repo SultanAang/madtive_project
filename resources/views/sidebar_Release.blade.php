@@ -1,12 +1,60 @@
 <div>
     {{-- BAGIAN 1: BRANDING / LOGO --}}
+    @php
+    // KITA AMBIL LANGSUNG DARI SUMBERNYA (Karena Model Login.php sudah benar)
+    $project = auth()->user()->client?->projects->first();
+
+    $client = auth()->user()->client;
+
+    // 2. Ambil SEMUA Project (Untuk isi Dropdown)
+    $allProjects = $client?->projects ?? collect();
+
+    // 3. Cek apakah ada request ganti project di URL? (?project_id=2)
+    $reqId = request()->get('project_id');
+
+    // 4. Tentukan Project Mana yang Aktif
+    if ($reqId) {
+        // Kalau ada request ID, cari project yang ID-nya cocok
+        $project = $allProjects->where('id', $reqId)->first();
+    } 
+    
+    // Kalau tidak ada request (atau ID salah), pakai project PERTAMA sebagai default
+    if (empty($project)) {
+        $project = $allProjects->first();
+    }
+    @endphp
+    <div class="p-4">
+    <label class="text-xs text-gray-500 font-bold uppercase">Pilih Project</label>
+    
+    {{-- Debug: Jika ingin memaksa muncul, ganti > 1 menjadi > 0 sementara --}}
+    @if($allProjects->count() > 1)
+    
+        <select 
+            class="w-full mt-1 p-2 border rounded-md bg-white text-gray-700 text-sm focus:ring-indigo-500"
+            {{-- Gunakan url()->current() agar tetap di halaman yang sama --}}
+            onchange="window.location.href='{{ url()->current() }}?project_id=' + this.value"
+        >
+            @foreach($allProjects as $p)
+                <option value="{{ $p->id }}" {{ (isset($project) && $project->id == $p->id) ? 'selected' : '' }}>
+                    {{ $p->name }}
+                </option>
+            @endforeach
+        </select>
+
+    @else
+        {{-- Tampil jika project cuma 1 atau 0 --}}
+        <div class="font-bold text-lg mt-1 text-indigo-700">
+            {{ $project->name ?? 'Belum Ada Project' }}
+        </div>
+    @endif
+    </div>
     <div class="p-6 pt-8">
         <a href="/" wire:navigate class="font-bold text-xl text-indigo-700 flex items-center gap-3 hover:opacity-80 transition">
             {{-- Ikon Logo --}}
             <div class="bg-indigo-100 p-2 rounded-lg">
                 <x-icon name="o-book-open" class="w-6 h-6 text-indigo-600" />
             </div>
-            <span>Madtive Docs</span>
+            <span>{{ $project->name ?? 'Belum Ada Project' }}</span>
         </a>
     </div>
 
@@ -50,16 +98,23 @@
             link="/faq" 
             class="mb-1 {{ request()->is('faq*') ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-600' }}" 
         />
-
+        
         {{-- BAGIAN 3: FOOTER MENU (Keluar / Kembali) --}}
+        <x-menu-separator title="Report" class="mt-6 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider" />
+        <x-menu-item 
+            title="Laporkan Bug"
+            icon="o-bug-ant" 
+            link="/report" 
+            class="mb-1 {{ request()->is('reportbug*') ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-600' }}" 
+        />
         <x-menu-separator class="my-4" />
 
-        <x-menu-item 
+        {{-- <x-menu-item 
             title="Kembali ke Aplikasi" 
             icon="o-arrow-left-start-on-rectangle" 
             link="/" 
             class="text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-        />
+        /> --}}
         @auth
         {{-- Tampilkan Nama User --}}
         <div class="px-4 py-2 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -83,4 +138,11 @@
         />
     @endauth
     </x-menu>
+    {{-- <div class="text-[10px] bg-red-100 p-2 mt-2 rounded text-red-800">
+    <p>Debug Info:</p>
+    <p>User: {{ auth()->user()->name }}</p>
+    <p>Role: {{ auth()->user()->role }}</p>
+    <p>Is Client?: {{ auth()->user()->client ? 'YA' : 'TIDAK' }}</p>
+    <p>Jml Project: {{ auth()->user()->client?->projects->count() ?? 0 }}</p>
 </div>
+</div> --}}

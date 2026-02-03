@@ -29,6 +29,10 @@ return new class extends Migration {
             //
             $table->foreignId("project_id")->constrained("projects")->cascadeOnDelete();
         });
+        Schema::table("releases", function (Blueprint $table) {
+            //
+            $table->foreignId("project_id")->constrained("projects")->cascadeOnDelete();
+        });
     }
 
     /**

@@ -16,7 +16,8 @@
             {{-- PANGGIL SIDEBAR DISINI --}}
             <x-slot:sidebar class="bg-white border-r border-gray-200 w-72 h-screen overflow-y-auto hidden lg:block custom-scrollbar">
                 
-                @include('sidebar_Release')  {{-- <--- CUKUP SATU BARIS INI --}}
+                @include('sidebar_Release',[
+                    ])  {{-- <--- CUKUP SATU BARIS INI --}}
             
             </x-slot:sidebar>
 

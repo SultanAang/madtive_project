@@ -16,6 +16,10 @@ return new class extends Migration {
             $table->string("category")->nullable();
             $table->longText("content")->nullable();
             $table->timestamps();
+            $table->string("is_approve")->default("draft")->index();
+
+            // Opsional: Catatan dari reviewer jika ditolak
+            $table->text("rejection_note")->nullable();
         });
     }
 

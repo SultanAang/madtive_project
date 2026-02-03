@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->string("status"); // planned, in_progress, done
             $table->date("eta")->nullable();
             $table->text("description")->nullable();
+            $table->string('is_approve')->default('draft')->index();
+            $table->text('rejection_note')->nullable();
             $table->timestamps();
         });
     }

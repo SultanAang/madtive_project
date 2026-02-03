@@ -16,6 +16,8 @@ use App\Livewire\ProjectManage;
 use App\Http\Controllers\Auth\LoginController;
 
 use App\Http\Controllers\ChangelogController; // Jangan lupa import ini
+use App\Livewire\Reviewer;
+
 Route::get("/", function () {
     return view("welcome");
 });
@@ -26,8 +28,8 @@ Route::get("/create", function () {
 // Route::get("/login", function () {
 //     return view("login");
 // });
-Route::get('/login', [LoginController::class, 'index'])->name('login');
-Route::post('/login', [LoginController::class, 'store'])->name('store');
+Route::get("/login", [LoginController::class, "index"])->name("login");
+Route::post("/login", [LoginController::class, "store"])->name("store");
 Route::post("/logout", function () {
     // 1. Hapus sesi login (baik itu admin atau user biasa)
     Auth::logout();
@@ -67,12 +69,12 @@ Route::middleware(["auth"])->group(function () {
 
     // --- 2. ROLE CLIENT ---
     Route::middleware(["role:client"])->group(function () {
-        Route::get("/client", function () {
-            // Ganti 'client_wrapper' dengan nama file kamu
-            return view("clien");
-        })->name("client.dashboard");
-        Route::get("/dddd", Documentation::class)->name("docs");
-        Route::get("/release-notes", ReleaseNotes::class);
+        // Route::get("/client", function () {
+        //     // Ganti 'client_wrapper' dengan nama file kamu
+        //     return view("clien");
+        // })->name("client.dashboard");
+        // Route::get("/dddd    ", Documentation::class)->name("docs");
+        Route::get("/release-notes", ReleaseNotes::class)->name("client.dashboard");
         Route::get("/changelog", function () {
             return view("changelog"); // Ini memanggil resources/views/changelog.blade.php
         })->name("changelog");
@@ -90,6 +92,9 @@ Route::middleware(["auth"])->group(function () {
         });
         Route::get("/roadmap", function () {
             return view("roadmap");
+        });
+        Route::get("/report", function () {
+            return view("reportbug");
         });
     });
 
@@ -111,10 +116,9 @@ Route::middleware(["auth"])->group(function () {
     });
 
     // --- 4. ROLE REVIEWER ---
+
     Route::middleware(["role:reviewer_internal"])->group(function () {
-        Route::get("/reviewer", function () {
-            // Ganti 'reviewer_wrapper' dengan nama file kamu
-            return view("reviewer");
-        })->name("reviewer.dashboard");
+        // Panggil Class langsung. Livewire akan otomatis mencarikan layoutnya.
+        Route::get("/reviewer", Reviewer::class)->name("reviewer");
     });
 });

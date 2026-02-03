@@ -34,17 +34,22 @@ class AdminPanelProvider extends PanelProvider {
             ->path("mencoba")
             // ->login()
             // >loginRouteSlug('login')
+            ->favicon(asset("img/logo_madtive.jpg"))
+
+            // Opsional: Ganti Logo di Pojok Kiri Atas sekalian
+            ->brandLogo(asset("img/logo_madtive.jpg"))
             ->colors([
-                "primary" => Color::Amber,
+                "primary" => Color::Blue,
             ])
+            ->brandName("Madtive Documentation")
             ->discoverResources(in: app_path("Filament/Resources"), for: "App\\Filament\\Resources")
             ->discoverPages(in: app_path("Filament/Pages"), for: "App\\Filament\\Pages")
             ->pages([
                 // Kita panggil class Dashboard secara langsung
                 Dashboard::class,
             ])
-            // ->discoverWidgets(in: app_path("Filament/Widgets"), for: "App\\Filament\\Widgets")
-            ->widgets([Widgets\AccountWidget::class, Widgets\FilamentInfoWidget::class])
+            ->discoverWidgets(in: app_path("Filament/Widgets"), for: "App\\Filament\\Widgets")
+            // ->widgets([Widgets\AccountWidget::class, Widgets\FilamentInfoWidget::class])
             ->tenant(Project::class) // <--- PENGATURAN AJAIBNYA
             ->tenantMenu(true) // Menampilkan menu ganti project
             ->middleware([

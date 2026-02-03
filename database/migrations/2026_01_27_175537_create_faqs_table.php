@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->text("answer");
             $table->string("category")->nullable();
             $table->boolean("is_visible")->default(true);
+            $table->string('is_approve')->default('draft')->index();
+            $table->text('rejection_note')->nullable();
             $table->timestamps();
         });
     }

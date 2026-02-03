@@ -32,18 +32,18 @@ class RoadmapResource extends Resource {
 
     public static function form(Schema $schema): Schema {
         return $schema->components([
-            Forms\Components\Select::make("project_id")
-                ->relationship("project", "name")
-                ->searchable()
-                ->preload()
-                ->required()
-                ->label("Milik Project")
-                // TAMBAHKAN BARIS INI:
-                ->default(fn() => request()->query("project_id"))
-                // JIKA MAU DIKUNCI (Supaya gak bisa diganti):
-                ->disabled(fn() => request()->query("project_id") !== null)
-                // Supaya data tetap terkirim meski disabled:
-                ->dehydrated(),
+            // Forms\Components\Select::make("project_id")
+            //     ->relationship("project", "name")
+            //     ->searchable()
+            //     ->preload()
+            //     ->required()
+            //     ->label("Milik Project")
+            //     // TAMBAHKAN BARIS INI:
+            //     ->default(fn() => request()->query("project_id"))
+            //     // JIKA MAU DIKUNCI (Supaya gak bisa diganti):
+            //     ->disabled(fn() => request()->query("project_id") !== null)
+            //     // Supaya data tetap terkirim meski disabled:
+            //     ->dehydrated(),
             Forms\Components\TextInput::make("title")->label("Fitur")->required(),
 
             Forms\Components\Select::make("status")

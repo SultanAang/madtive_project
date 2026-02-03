@@ -10,21 +10,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Filament\Models\Contracts\HasName;
 
 class Project extends Model implements HasName {
-    // protected $fillable = [
-    //     "client_id",
-    //     "name",
-    //     "slug",
-    //     "logo",
-    //     "description",
-    //     "deadline",
-    //     "status",
-    //     "progress"
-    // ];
+    protected $fillable = [
+        "client_id",
+        "name",
+        "slug",
+        "logo",
+        "description",
+        "deadline",
+        "status",
+        "progress",
+    ];
 
     protected $guarded = [];
 
-    public function getFilamentName(): string
-    {
+    public function getFilamentName(): string {
         return $this->name;
     }
 
@@ -51,5 +50,8 @@ class Project extends Model implements HasName {
 
     public function releases(): HasMany {
         return $this->hasMany(Release::class);
+    }
+    public function bugReports() {
+        return $this->hasMany(BugReport::class);
     }
 }

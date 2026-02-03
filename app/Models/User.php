@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-
 use App\Models\Project;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -11,14 +10,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 use Filament\Models\Contracts\HasTenants;
-
+// , HasTenants
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
-use Illuminate\Database\Eloquent\Model;       // <--- INI YANG TADI KURANG
+use Illuminate\Database\Eloquent\Model; // <--- INI YANG TADI KURANG
 use Illuminate\Support\Collection;
 
-class User extends Authenticatable implements FilamentUser, HasTenants {
+class User extends Authenticatable implements FilamentUser {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -62,24 +61,23 @@ class User extends Authenticatable implements FilamentUser, HasTenants {
             "password" => "hashed",
         ];
     }
-    public function canAccessPanel(Panel $panel): bool
-    {
+    public function canAccessPanel(Panel $panel): bool {
         // Ganti 'role' dengan nama kolom di database Anda (misal: 'jabatan', 'level', 'type')
         // Pastikan pengecekan string-nya ('tim_dokumentasi') sama persis dengan di database
-        
-        return $this->role === 'tim_dokumentasi';
+
+        return $this->role === "tim_dokumentasi";
     }
 
-    public function getTenants(Panel $panel): Collection
-    {
+    public function getTenants(Panel $panel): Collection {
         // Kembalikan semua project (karena Anda admin tunggal)
         return Project::withoutGlobalScopes()->get();
     }
 
-    public function canAccessTenant(Model $tenant): bool
-    {
+    public function canAccessTenant(Model $tenant): bool {
         // Boleh akses semua project
         return true;
+    }   
+    public function client() {
+        return $this->hasOne(Client::class, "user_id", "id");
     }
-
 }
